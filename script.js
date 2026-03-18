@@ -185,6 +185,11 @@
       if (ok) score += 1;
     });
 
+    const noUnitsCheckbox = document.getElementById("no-units");
+    if (noUnitsCheckbox && noUnitsCheckbox.checked) {
+      score = Math.max(0, score - 2);
+    }
+
     result.textContent = `Marks: ${score} / ${total}`;
     result.style.color = score === total ? "#1f7a2f" : "#1f1b16";
 
