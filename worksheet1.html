@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Worksheet 1 - Density Decoded</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="page">
+    <header class="sheet-header">
+      <h1>Caritas Wu Cheng-chung College</h1>
+      <h2>2025 / 2026 Cheng-chung Cup</h2>
+      <h3>DENSITY DECODED - Worksheet 1</h3>
+      <div class="meta-row">
+        <label for="group1">Group Number 組別:</label>
+        <input id="group1" class="group-input" type="text" maxlength="10" />
+      </div>
+      <p class="hint">Density is given. Fill in the mass and volume, then click "Check Answers".</p>
+    </header>
+
+    <section class="sheet-block">
+      <table>
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Mass 質量 / g</th>
+            <th>Density 密度 (g/cm3)</th>
+            <th>Volume 體積 / cm3</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>A</td>
+            <td><input data-w1="A-mass" /></td>
+            <td class="given-value">1.70</td>
+            <td><input data-w1="A-volume" /></td>
+          </tr>
+          <tr>
+            <td>B</td>
+            <td><input data-w1="B-mass" /></td>
+            <td class="given-value">1.53</td>
+            <td><input data-w1="B-volume" /></td>
+          </tr>
+          <tr>
+            <td>C</td>
+            <td><input data-w1="C-mass" /></td>
+            <td class="given-value">1.74</td>
+            <td><input data-w1="C-volume" /></td>
+          </tr>
+          <tr>
+            <td>D</td>
+            <td><input data-w1="D-mass" /></td>
+            <td class="given-value">1.62</td>
+            <td><input data-w1="D-volume" /></td>
+          </tr>
+          <tr>
+            <td>E</td>
+            <td><input data-w1="E-mass" /></td>
+            <td class="given-value">1.02</td>
+            <td><input data-w1="E-volume" /></td>
+          </tr>
+          <tr>
+            <td>F</td>
+            <td><input data-w1="F-mass" /></td>
+            <td class="given-value">7.65</td>
+            <td><input data-w1="F-volume" /></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="actions">
+      <button id="check-w1" type="button">Check Answers</button>
+      <button id="reset-w1" type="button" class="ghost">Reset</button>
+      <a class="ghost-link" href="index.html">Back to Home</a>
+    </section>
+
+    <section id="result-w1" class="result" aria-live="polite"></section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
