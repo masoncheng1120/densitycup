@@ -141,10 +141,27 @@
         timestamp: new Date().toISOString()
       });
 
-      await fetch(GOOGLE_SHEET_WEB_APP_URL, {
+      const response = await fetch(GOOGLE_SHEET_WEB_APP_URL, {
         method: "POST",
         body: formData
       });
+
+      if (!response.ok) {
+        throw new Error(`Sync request failed with status ${response.status}`);
+      }
+
+      const responseText = await response.text();
+      let payload = null;
+
+      try {
+        payload = JSON.parse(responseText);
+      } catch (_parseError) {
+        throw new Error("Sync did not return valid JSON response.");
+      }
+
+      if (!payload || payload.ok !== true) {
+        throw new Error("Sync response did not confirm success.");
+      }
 
       pageSubmissionState[worksheetKey] = true;
 
@@ -281,4 +298,3 @@
   if (check2) check2.addEventListener("click", checkWorksheet2);
   if (reset2) reset2.addEventListener("click", resetWorksheet2);
 })();
-
