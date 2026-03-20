@@ -2,6 +2,10 @@
   // Paste your deployed Google Apps Script Web App URL here.
   const GOOGLE_SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycby0dCQmC3B-ICO6A3BZL__SArj3lbVAkDinisiw1dVi8foEwBLBn6yZIVTO8XH-uIvb/exec";
   const SCORE_STORAGE_KEY = "densityDecodedScores";
+  const pageSubmissionState = {
+    worksheet1: false,
+    worksheet2: false
+  };
 
   const worksheet1Answers = {
     "A-mass": 44.32,
@@ -77,18 +81,17 @@
     try {
       const raw = localStorage.getItem(SCORE_STORAGE_KEY);
       if (!raw) {
-        return { groupNumber: "", worksheet1: null, worksheet2: null, lastSubmittedSignature: "" };
+        return { groupNumber: "", worksheet1: null, worksheet2: null };
       }
 
       const parsed = JSON.parse(raw);
       return {
         groupNumber: String(parsed.groupNumber || ""),
         worksheet1: Number.isFinite(parsed.worksheet1) ? parsed.worksheet1 : null,
-        worksheet2: Number.isFinite(parsed.worksheet2) ? parsed.worksheet2 : null,
-        lastSubmittedSignature: String(parsed.lastSubmittedSignature || "")
+        worksheet2: Number.isFinite(parsed.worksheet2) ? parsed.worksheet2 : null
       };
     } catch (_error) {
-      return { groupNumber: "", worksheet1: null, worksheet2: null, lastSubmittedSignature: "" };
+      return { groupNumber: "", worksheet1: null, worksheet2: null };
     }
   }
 
@@ -102,17 +105,17 @@
     const updated = {
       groupNumber,
       worksheet1: worksheetKey === "worksheet1" ? marks : saved.worksheet1,
-      worksheet2: worksheetKey === "worksheet2" ? marks : saved.worksheet2,
-      lastSubmittedSignature: saved.lastSubmittedSignature
+      worksheet2: worksheetKey === "worksheet2" ? marks : saved.worksheet2
     };
     writeStoredScores(updated);
     return updated;
   }
 
-  async function trySubmitScoresToGoogleSheet(resultElement) {
+  async function trySubmitScoresToGoogleSheet(resultElement, worksheetKey, marks) {
     const saved = readStoredScores();
+    const scoreValue = Number.isFinite(marks) ? marks : null;
 
-    if (!saved.groupNumber || saved.worksheet1 === null || saved.worksheet2 === null) {
+    if (!saved.groupNumber || scoreValue === null) {
       return;
     }
 
@@ -121,20 +124,20 @@
       return;
     }
 
-    const total = saved.worksheet1 + saved.worksheet2;
-    const signature = [saved.groupNumber, saved.worksheet1, saved.worksheet2, total].join("|");
-
-    if (signature === saved.lastSubmittedSignature) {
-      resultElement.textContent += " | Already synced.";
+    if (pageSubmissionState[worksheetKey]) {
+      resultElement.textContent += " | This page has already sent data.";
       return;
     }
 
     try {
+      const worksheet1Value = worksheetKey === "worksheet1" ? String(scoreValue) : "";
+      const worksheet2Value = worksheetKey === "worksheet2" ? String(scoreValue) : "";
       const formData = new URLSearchParams({
         groupNumber: saved.groupNumber,
-        worksheet1: String(saved.worksheet1),
-        worksheet2: String(saved.worksheet2),
-        totalScore: String(total),
+        worksheet1: worksheet1Value,
+        worksheet2: worksheet2Value,
+        totalScore: String(scoreValue),
+        worksheet: worksheetKey,
         timestamp: new Date().toISOString()
       });
 
@@ -143,14 +146,9 @@
         body: formData
       });
 
-      writeStoredScores({
-        groupNumber: saved.groupNumber,
-        worksheet1: saved.worksheet1,
-        worksheet2: saved.worksheet2,
-        lastSubmittedSignature: signature
-      });
+      pageSubmissionState[worksheetKey] = true;
 
-      resultElement.textContent += ` | Synced to Sheet (Total: ${total}/52).`;
+      resultElement.textContent += " | Synced to Sheet.";
       resultElement.style.color = "#1f7a2f";
     } catch (_error) {
       resultElement.textContent += " | Sync failed. Check Google Sheet URL.";
@@ -185,16 +183,11 @@
       if (ok) score += 1;
     });
 
-    const noUnitsCheckbox = document.getElementById("no-units");
-    if (noUnitsCheckbox && noUnitsCheckbox.checked) {
-      score = Math.max(0, score - 2);
-    }
-
     result.textContent = `Marks: ${score} / ${total}`;
     result.style.color = score === total ? "#1f7a2f" : "#1f1b16";
 
     saveWorksheetScore("worksheet1", score);
-    await trySubmitScoresToGoogleSheet(result);
+    await trySubmitScoresToGoogleSheet(result, "worksheet1", score);
   }
 
   function resetWorksheet1() {
@@ -265,7 +258,7 @@
     result.style.color = marks === totalMarks ? "#1f7a2f" : "#1f1b16";
 
     saveWorksheetScore("worksheet2", marks);
-    await trySubmitScoresToGoogleSheet(result);
+    await trySubmitScoresToGoogleSheet(result, "worksheet2", marks);
   }
 
   function resetWorksheet2() {
@@ -288,3 +281,4 @@
   if (check2) check2.addEventListener("click", checkWorksheet2);
   if (reset2) reset2.addEventListener("click", resetWorksheet2);
 })();
+
